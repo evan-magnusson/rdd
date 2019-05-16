@@ -2,3 +2,10 @@ General To Do's:
 
 - update my gitignore?
 - put this file as an rst elsewhere
+- tutorial of how/why to use each function
+- tests to put in a tutorial, but not as functions:
+    - continuity plots
+    - density plot
+    - balance, randomness test (though they aren't actually needed)
+    - discontinuity reg test
+    - show a spline

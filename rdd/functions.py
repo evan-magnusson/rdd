@@ -5,15 +5,8 @@ import statsmodels.formula.api as smf
 '''
 Additional functions to create:
     - RDD Tests
-        - distribution plot
         - bin test
         - other mccrary tests?
-        - balance
-        - randomness reg test
-        - continuity plots
-        - continuity regs
-    - Run RDD (verbose or non-verbose) (controls) (different functional forms of poly)
-    - rdd plots
 '''
 
 def optimal_bandwidth(Y, X):
@@ -92,7 +85,7 @@ def truncated_data(data, xname, bandwidth):
         - allow an option, if no bandwidth given, to do optimal bandwidth
         - is it strict inequality on bandwidth?
     '''
-    data_new = data.loc[data[xname]<=bandwidth, ]
+    data_new = data.loc[np.abs(data[xname])<=bandwidth, ]
     return data_new
 
 
@@ -105,6 +98,7 @@ def rdd(input_data, yname, xname):
         - allow for a list of controls
         - allow for weighted least squares
         - should I not call this rdd?
+        - treated needs to not assume the cut is at 0
         - allow it to give something with the 'treated' binary already?
         - allow for noconst
         - allow for someone to already have a treated column
@@ -118,3 +112,28 @@ def rdd(input_data, yname, xname):
     rdd_results = rdd_model.fit()
     return rdd_results
 
+
+def bin_data(data, yname, xname, bins):
+    '''
+    To Do:
+        - this could take full or cut data
+        - there is likely a much more efficient way to do this with groupby or .where()
+    '''
+    hist, edges = np.histogram(data[xname], bins=bins)
+    bin_midpoint = np.zeros(edges.shape[0]-1)
+    binned_df = pd.DataFrame(np.zeros((edges.shape[0]-1, 1)))
+    for i in range(edges.shape[0]-1):
+        bin_midpoint[i] = (edges[i] + edges[i+1]) / 2
+        if i < edges.shape[0]-2:
+            dat_temp = data.loc[(data[xname] >= edges[i]) & (
+                data[xname] < edges[i+1]), :]
+            binned_df.loc[binned_df.index[i], yname] = dat_temp[yname].mean()
+            binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
+            binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
+        else:
+            dat_temp = data.loc[(data[xname] >= edges[i]) & (
+                data[xname] <= edges[i+1]), :]
+            binned_df.loc[binned_df.index[i], yname] = dat_temp[yname].mean()
+            binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
+            binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
+    return binned_df
