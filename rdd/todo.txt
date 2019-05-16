@@ -1,0 +1,4 @@
+General To Do's:
+
+- update my gitignore?
+- put this file as an rst elsewhere

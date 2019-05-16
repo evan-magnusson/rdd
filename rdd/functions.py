@@ -1,4 +1,20 @@
 import pandas as pd
+import numpy as np
+import statsmodels.formula.api as smf
+
+'''
+Additional functions to create:
+    - RDD Tests
+        - distribution plot
+        - bin test
+        - other mccrary tests?
+        - balance
+        - randomness reg test
+        - continuity plots
+        - continuity regs
+    - Run RDD (verbose or non-verbose) (controls) (different functional forms of poly)
+    - rdd plots
+'''
 
 def optimal_bandwidth(Y, X):
     '''
@@ -9,8 +25,16 @@ def optimal_bandwidth(Y, X):
         http://www.nber.org/papers/w14726.pdf
 
     INPUTS:
+        Two equal length pandas series
 
     OUTPUTS:
+
+    TODO: 
+        - accept numpy arrays
+        - accept an x that doesn't have the thresh at 0 - if they give the threshold
+        - remove these idx_col? 
+        - remove any pandas dependencies?
+        - what should change if I want controls
 
     '''
 
@@ -60,17 +84,37 @@ def optimal_bandwidth(Y, X):
     
     return hopt
 
-'''
-Additional functions to create:
-    - Generate dataset given bandwidth
-    - RDD Tests
-        - distribution plot
-        - bin test
-        - other mccrary tests?
-        - balance
-        - randomness reg test
-        - continuity plots
-        - continuity regs
-    - Run RDD (verbose or non-verbose) (controls) (different functional forms of poly)
-    - rdd plots
-'''
+
+def truncated_data(data, xname, bandwidth):
+    '''
+    To Do:
+        - remove pandas dependencies?
+        - allow an option, if no bandwidth given, to do optimal bandwidth
+        - is it strict inequality on bandwidth?
+    '''
+    data_new = data.loc[data[xname]<=bandwidth, ]
+    return data_new
+
+
+def rdd(input_data, yname, xname):
+    '''
+    To Do:
+        - instead of equation, allow for default yname ~ xname + c
+        - allow for it just to be data, yname, and xname, and a toggle for finding the optimal bandwidth
+        - or allow for it to be data, yname, xname, and a input for your own bandwidth
+        - allow for a list of controls
+        - allow for weighted least squares
+        - should I not call this rdd?
+        - allow it to give something with the 'treated' binary already?
+        - allow for noconst
+        - allow for someone to already have a treated column
+        - better way to make the treated column?
+        - anything different than this output? i don't want to output the summary, in case people want params
+    '''
+    data = input_data.copy() # To avoid SettingWithCopy warnings
+    data['treated'] = np.where(data[xname] >= 0, 1, 0)
+    equation = yname + ' ~ treated + ' + xname
+    rdd_model = smf.ols(equation, data=data)
+    rdd_results = rdd_model.fit()
+    return rdd_results
+
