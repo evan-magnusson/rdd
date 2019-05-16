@@ -1,7 +1,19 @@
 import pandas as pd
 
 def optimal_bandwidth(Y, X):
-    # http://www.nber.org/papers/w14726.pdf
+    '''
+    DESCRIPTION:
+        For a given outcome Y and running variable X, computes the optimal bandwidth
+        h. For more information, see "OPTIMAL BANDWIDTH CHOICE FOR THE REGRESSION 
+        DISCONTINUITY ESTIMATOR", by Imbens and Kalyanaraman, at
+        http://www.nber.org/papers/w14726.pdf
+
+    INPUTS:
+
+    OUTPUTS:
+
+    '''
+
     # Step 1
     h1 = 1.84 * X.std() * (X.shape[0]**(-.2))
     Nh1neg = X[(X < 0) & (X > -h1)].shape[0]
@@ -47,3 +59,18 @@ def optimal_bandwidth(Y, X):
     hopt = CK * (2*sig2c/(fXc * ((m2pos - m2neg)**2 + (rpos+rneg))))**.2 * Y.shape[0]**(-.2)
     
     return hopt
+
+'''
+Additional functions to create:
+    - Generate dataset given bandwidth
+    - RDD Tests
+        - distribution plot
+        - bin test
+        - other mccrary tests?
+        - balance
+        - randomness reg test
+        - continuity plots
+        - continuity regs
+    - Run RDD (verbose or non-verbose) (controls) (different functional forms of poly)
+    - rdd plots
+'''
