@@ -89,25 +89,30 @@ def truncated_data(data, xname, bandwidth):
     return data_new
 
 
-def rdd(input_data, yname, xname):
+def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False):
     '''
     To Do:
-        - instead of equation, allow for default yname ~ xname + c
+        - return an error if yname AND equation are empty
+        - return an error if 'TREATED' is in the column (unless you're using your own equation)
         - allow for it just to be data, yname, and xname, and a toggle for finding the optimal bandwidth
         - or allow for it to be data, yname, xname, and a input for your own bandwidth
-        - allow for a list of controls
         - allow for weighted least squares
-        - should I not call this rdd?
-        - treated needs to not assume the cut is at 0
-        - allow it to give something with the 'treated' binary already?
-        - allow for noconst
-        - allow for someone to already have a treated column
-        - better way to make the treated column?
+        - allow it to give a different treatment column
+        - return just teh ols object, and let them do standard errors and stuff?
         - anything different than this output? i don't want to output the summary, in case people want params
+    Notes:
+        - more complex controls requires you to put in your own equation
+        - say what TREATED is
     '''
     data = input_data.copy() # To avoid SettingWithCopy warnings
-    data['treated'] = np.where(data[xname] >= 0, 1, 0)
-    equation = yname + ' ~ treated + ' + xname
+    data['TREATED'] = np.where(data[xname] >= cut, 1, 0)
+    if equation==None:
+        equation = yname + ' ~ TREATED + ' + xname
+        if controls != None:
+            equation_controls = ' + '.join(controls)
+            equation += ' + ' + equation_controls
+    if noconst==True:
+        equation += ' -1'
     rdd_model = smf.ols(equation, data=data)
     rdd_results = rdd_model.fit()
     return rdd_results

@@ -9,3 +9,4 @@ General To Do's:
     - balance, randomness test (though they aren't actually needed)
     - discontinuity reg test
     - show a spline
+- in each input, can i specify the required input?
