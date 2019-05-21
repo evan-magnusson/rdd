@@ -2,33 +2,26 @@ import pandas as pd
 import numpy as np
 import statsmodels.formula.api as smf
 
-'''
-Additional functions to create:
-    - RDD Tests
-        - bin test
-        - other mccrary tests?
-'''
 
 def optimal_bandwidth(Y, X):
     '''
     DESCRIPTION:
         For a given outcome Y and running variable X, computes the optimal bandwidth
-        h. For more information, see "OPTIMAL BANDWIDTH CHOICE FOR THE REGRESSION 
-        DISCONTINUITY ESTIMATOR", by Imbens and Kalyanaraman, at
-        http://www.nber.org/papers/w14726.pdf
+        h using a triangular kernel. For more information, see 
+        "OPTIMAL BANDWIDTH CHOICE FOR THE REGRESSION DISCONTINUITY ESTIMATOR",
+        by Imbens and Kalyanaraman, at http://www.nber.org/papers/w14726.pdf
 
     INPUTS:
         Two equal length pandas series
+            Y - the outcome variable
+            X - the running variable
 
     OUTPUTS:
 
     TODO: 
-        - accept numpy arrays
+        - Different implementation when adding controls
+        - ALlow for alternative kernels
         - accept an x that doesn't have the thresh at 0 - if they give the threshold
-        - remove these idx_col? 
-        - remove any pandas dependencies?
-        - what should change if I want controls
-
     '''
 
     # Step 1
@@ -43,7 +36,7 @@ def optimal_bandwidth(Y, X):
     # Step 2
     medXneg = X[X<0].median()
     medXpos = X[X>=0].median()
-    dat_temp = pd.DataFrame({'Y': Y,'X':X, 'idx_col':X.index})
+    dat_temp = pd.DataFrame({'Y': Y,'X':X})
     dat_temp = dat_temp.loc[(dat_temp['X'] >= medXneg) & (dat_temp['X'] <= medXpos)]
     dat_temp['treat'] = 0
     dat_temp.loc[dat_temp['X'] >= 0, 'treat'] = 1
@@ -56,14 +49,14 @@ def optimal_bandwidth(Y, X):
     h2neg = 3.56 * (X[X<0].shape[0]**(-1/7.0)) * (sig2c/(fXc * np.max([m3**2, .01]))) ** (1/7.0)
     Yplus = Y[(X>=0) & (X<=h2pos)]
     Xplus = X[(X>=0) & (X<=h2pos)]
-    dat_temp = pd.DataFrame({'Y': Yplus,'X':Xplus, 'idx_col':Xplus.index})
+    dat_temp = pd.DataFrame({'Y': Yplus,'X':Xplus})
     dat_temp['X2'] = X**2
     eqn = 'Y ~ 1 + X + X2'
     results = smf.ols(eqn, data=dat_temp).fit()
     m2pos = 2*results.params.loc['X2']
     Yneg = Y[(X<0) & (X>=-h2neg)]
     Xneg = X[(X<0) & (X>=-h2neg)]
-    dat_temp = pd.DataFrame({'Y': Yneg,'X':Xneg, 'idx_col':Xneg.index})
+    dat_temp = pd.DataFrame({'Y': Yneg,'X':Xneg})
     dat_temp['X2'] = X**2
     eqn = 'Y ~ 1 + X + X2'
     results = smf.ols(eqn, data=dat_temp).fit()

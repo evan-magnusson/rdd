@@ -10,3 +10,7 @@ General To Do's:
     - discontinuity reg test
     - show a spline
 - in each input, can i specify the required input?
+- additional functions to create:
+    - bin test
+    - other mccrary tests?
+    

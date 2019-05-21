@@ -29,11 +29,11 @@ print(data.head())
 h = rdd.optimal_bandwidth(data['y'], data['x'])
 print(h)
 
-data_rdd = rdd.truncated_data(data, 'x', h)
+# data_rdd = rdd.truncated_data(data, 'x', h)
 
-results = rdd.rdd(data_rdd, 'x', 'y')
+# results = rdd.rdd(data_rdd, 'x', 'y')
 
-print(results.summary())
+# print(results.summary())
 
 # data_binned = rdd.bin_data(data, 'y', 'x', 100)
 
