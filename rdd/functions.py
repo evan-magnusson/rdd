@@ -12,10 +12,10 @@ def optimal_bandwidth(Y, X, cut=0):
         by Imbens and Kalyanaraman, at http://www.nber.org/papers/w14726.pdf
 
     INPUTS:
-        Two equal length pandas series
-            Y - the outcome variable
-            X - the running variable
-        cut - scalar value for the threshold of the rdd; default is 0
+        Two equal length pandas Series
+            Y: the outcome variable
+            X: the running variable
+        cut: value for the threshold of the rdd (scalar) (default is 0)
     
     OUTPUTS:
         Scalar optimal bandwidth value
@@ -82,13 +82,14 @@ def truncated_data(data, xname, bandwidth=None, yname=None, cut=0):
         a given (or optimal) bandwidth
 
     INPUTS:
-        Panda dataframe with you X and Y values
-        Name of your running variable
-        Bandwidth (if none given, the optimal bandwidth is computed)
-        The name of your outcome variable (if no bandwidth is given)
-        The value of your threshold (assumed to be 0)
+        data: data with the X and Y values (pandas DataFrame)
+        xname: Name of your running variable (string)
+        bandwidth: Bandwidth (scalar) (if None given, the optimal bandwidth is computed)
+        yname: The name of your outcome variable (string) (only needed if no bandwidth is given)
+        cut: The value of your threshold (scalar) (default is 0)
+
     OUTPUTS:
-        Dataset with observations outside of the bandwidth dropped
+        pandas DataFrame with observations outside of the bandwidth dropped
     
     '''
     if bandwidth==None:
@@ -100,24 +101,31 @@ def truncated_data(data, xname, bandwidth=None, yname=None, cut=0):
     return data_new
 
 
-def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False):
+def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False, weights=1):
     '''
+    This function implements a linear regression (ordinary or weighted least squares can be used) for 
+        the estimation of regressing the outcome variable on the running variable.  A "TREATED" variable
+        is created, the coefficient on which is the causal effect of being to the right of the threshold.
+
+        The user may specify a list of controls to be added linearly, or supply their own equation.  
+
     INPUT:
+        input_data: dataset with outcome and running variables (and potentially controls) (pandas DataFrame)
+        xname: name of running variable (string)
+        yname: name of outcome variable (string) (default is None - not needed if you include your own equation)
+        cut: location of threshold in xname (scalar) (default is 0)
+        equation: Estimation equation as a string (see Statsmodels formula syntax for more info)
+        controls: List of controls to include in the estimation (list of strings) (not needed if you include your own equation)
+        noconst: If True, model does not estimate an intercept (bool) (default is false)
+        weights: Weights for weighted least squares (numpy array) (default is equal weights, ie OLS)
 
     OUTPUT:
+        Statsmodels object
 
     To Do:
         - return an error if yname AND equation are empty
         - return an error if 'TREATED' is in the column (unless you're using your own equation)
-        - allow for it just to be data, yname, and xname, and a toggle for finding the optimal bandwidth
-        - or allow for it to be data, yname, xname, and a input for your own bandwidth
-        - allow for weighted least squares
-        - allow it to give a different treatment column
-        - return just teh ols object, and let them do standard errors and stuff?
-        - anything different than this output? i don't want to output the summary, in case people want params
-    Notes:
-        - more complex controls requires you to put in your own equation
-        - say what TREATED is
+
     '''
     data = input_data.copy() # To avoid SettingWithCopy warnings
     data['TREATED'] = np.where(data[xname] >= cut, 1, 0)
@@ -128,25 +136,24 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
             equation += ' + ' + equation_controls
     if noconst==True:
         equation += ' -1'
-    rdd_model = smf.ols(equation, data=data)
-    rdd_results = rdd_model.fit()
-    return rdd_results
+    rdd_model = smf.wls(equation, data=data, weights=weights)
+    return rdd_model
 
 
 def bin_data(data, yname, xname, bins=50):
     '''
-    When datasets are so large that traditional RDD scatterplots are difficult to read, 
+    When datasets are so large that traditional RDD scatter plots are difficult to read, 
         this will group observations by their X values into a set number of bins and compute
         the mean outcome value in that bin.  
 
     INPUT:
-        Dataframe
-        Name of outcome variable
-        Name of running variable
-        Desired number of bins to group data by; default is 50
+        data: dataset (pandas DataFrame)
+        yname: Name of outcome variable (string)
+        xname: Name of running variable (string)
+        bins: Desired number of bins to group data by (integer) (default is 50)
 
     OUTPUT:
-        A dataframe that has a row for each bin with columns:
+        A pandas DataFrame that has a row for each bin with columns:
             yname: The average value of the outcome variable in that bin
             xname: the midpoint value of the running variable in that bin
             n_obs: The number of observations in this bin
