@@ -19,10 +19,6 @@ def optimal_bandwidth(Y, X, cut=0):
     
     OUTPUTS:
         Scalar optimal bandwidth value
-
-    TODO: 
-        - Different implementation when adding controls
-        - ALlow for alternative kernels
     '''
 
     # Normalize X
@@ -157,10 +153,7 @@ def bin_data(data, yname, xname, bins=50):
             yname: The average value of the outcome variable in that bin
             xname: the midpoint value of the running variable in that bin
             n_obs: The number of observations in this bin
-
-    To Do:
-        - there is likely a much more efficient way to do this with 
-            groupby, cut, or .where()
+            
     '''
     hist, edges = np.histogram(data[xname], bins=bins)
     bin_midpoint = np.zeros(edges.shape[0]-1)
