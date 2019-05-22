@@ -6,7 +6,7 @@ setup(
     author='Evan Magnusson',
     author_email='evan.magnusson@alumni.stanford.edu',
     packages=['rdd'],
-    install_requires=['pandas'],
+    install_requires=['pandas', 'numpy', 'statsmodels'],
     version='0.1',
     license='MIT',
     description='Tools to implement regression discontinuity designs in Python.',
