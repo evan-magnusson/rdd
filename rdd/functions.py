@@ -3,7 +3,7 @@ import numpy as np
 import statsmodels.formula.api as smf
 
 
-def optimal_bandwidth(Y, X):
+def optimal_bandwidth(Y, X, cut=0):
     '''
     DESCRIPTION:
         For a given outcome Y and running variable X, computes the optimal bandwidth
@@ -15,14 +15,18 @@ def optimal_bandwidth(Y, X):
         Two equal length pandas series
             Y - the outcome variable
             X - the running variable
-
+        cut - scalar value for the threshold of the rdd; default is 0
+    
     OUTPUTS:
+        Scalar optimal bandwidth value
 
     TODO: 
         - Different implementation when adding controls
         - ALlow for alternative kernels
-        - accept an x that doesn't have the thresh at 0 - if they give the threshold
     '''
+
+    # Normalize X
+    X = X - cut
 
     # Step 1
     h1 = 1.84 * X.std() * (X.shape[0]**(-.2))
@@ -71,19 +75,37 @@ def optimal_bandwidth(Y, X):
     return hopt
 
 
-def truncated_data(data, xname, bandwidth):
+def truncated_data(data, xname, bandwidth=None, yname=None, cut=0):
     '''
-    To Do:
-        - remove pandas dependencies?
-        - allow an option, if no bandwidth given, to do optimal bandwidth
-        - is it strict inequality on bandwidth?
+
+    Drop observations from dataset that are outside 
+        a given (or optimal) bandwidth
+
+    INPUTS:
+        Panda dataframe with you X and Y values
+        Name of your running variable
+        Bandwidth (if none given, the optimal bandwidth is computed)
+        The name of your outcome variable (if no bandwidth is given)
+        The value of your threshold (assumed to be 0)
+    OUTPUTS:
+        Dataset with observations outside of the bandwidth dropped
+    
     '''
-    data_new = data.loc[np.abs(data[xname])<=bandwidth, ]
+    if bandwidth==None:
+        if yname==None:
+            raise NameError("You must supply either a bandwidth or the name of your outcome variable.")
+        else:
+            bandwidth = optimal_bandwidth(data[yname], data[xname], cut=cut)
+    data_new = data.loc[np.abs(data[xname]-cut)<=bandwidth, ]
     return data_new
 
 
 def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False):
     '''
+    INPUT:
+
+    OUTPUT:
+
     To Do:
         - return an error if yname AND equation are empty
         - return an error if 'TREATED' is in the column (unless you're using your own equation)
@@ -111,11 +133,27 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
     return rdd_results
 
 
-def bin_data(data, yname, xname, bins):
+def bin_data(data, yname, xname, bins=50):
     '''
+    When datasets are so large that traditional RDD scatterplots are difficult to read, 
+        this will group observations by their X values into a set number of bins and compute
+        the mean outcome value in that bin.  
+
+    INPUT:
+        Dataframe
+        Name of outcome variable
+        Name of running variable
+        Desired number of bins to group data by; default is 50
+
+    OUTPUT:
+        A dataframe that has a row for each bin with columns:
+            yname: The average value of the outcome variable in that bin
+            xname: the midpoint value of the running variable in that bin
+            n_obs: The number of observations in this bin
+
     To Do:
-        - this could take full or cut data
-        - there is likely a much more efficient way to do this with groupby or .where()
+        - there is likely a much more efficient way to do this with 
+            groupby, cut, or .where()
     '''
     hist, edges = np.histogram(data[xname], bins=bins)
     bin_midpoint = np.zeros(edges.shape[0]-1)
