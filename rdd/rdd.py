@@ -132,6 +132,7 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
             equation += ' + ' + equation_controls
     if noconst==True:
         equation += ' -1'
+    print('Estimation Equation:\t', equation)
     rdd_model = smf.wls(equation, data=data, weights=weights)
     return rdd_model
 

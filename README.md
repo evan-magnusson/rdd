@@ -1,6 +1,6 @@
 # rdd
 
-rdd is a set of tools for implementing regression discontinuity designs in Python.  At present, it only allows for inputs that are pandas Series or DataFrames.
+rdd is a set of tools for implementing regression discontinuity designs in Python.  At present, it only allows for inputs that are pandas Series or DataFrames.  Check out the tutorial [here]() for a guide to using this package.
 
 ## Current Features:
 
@@ -12,13 +12,10 @@ rdd is a set of tools for implementing regression discontinuity designs in Pytho
 
 ## Features to Come:
 
-* Tutorial of how and why to use each function
 * Tutorial on how to check rdd's statistical assumptions in Python, such as using:
   * Continuity plots
   * Density plots
   * Tests for discontinuities
   * Checking for balance and testing for random assignment (though not a requirement, it can still be a useful check)
-* A robust test file for functions
-  * Add error checking/reporting in functions
 * McCrary tests
 * Fuzzy rdd implementations
