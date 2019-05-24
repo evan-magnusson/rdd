@@ -10,7 +10,7 @@ setuptools.setup(
     author_email='evan.magnusson@alumni.stanford.edu',
     packages=setuptools.find_packages(),
     install_requires=['pandas', 'numpy', 'statsmodels'],
-    version='0.0.1',
+    version='0.0.2',
     license='MIT',
     description='Tools to implement regression discontinuity designs in Python.',
     long_description=long_description,
