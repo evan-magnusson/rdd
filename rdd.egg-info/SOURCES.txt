@@ -1,8 +1,7 @@
 README.md
 setup.py
 rdd/__init__.py
-rdd/functions.py
-rdd/test.py
+rdd/rdd.py
 rdd.egg-info/PKG-INFO
 rdd.egg-info/SOURCES.txt
 rdd.egg-info/dependency_links.txt
