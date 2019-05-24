@@ -8,7 +8,8 @@ rdd is a set of tools for implementing regression discontinuity designs in Pytho
 * Creates a dataset containing only observations within a given bandwidth
 * Generates a reduced pandas DataFrame for graphical analysis (such as binned scatter plots) when the number of observations is large
 * Implements a sharp RDD
-  * With or without user supplied controls
+  * With or without user supplied equation and/or controls
+  * Via OLS or WLS
 
 ## Features to Come:
 
@@ -18,4 +19,4 @@ rdd is a set of tools for implementing regression discontinuity designs in Pytho
   * Tests for discontinuities
   * Checking for balance and testing for random assignment (though not a requirement, it can still be a useful check)
 * McCrary tests
-* Fuzzy rdd implementations
+* Implementation of Fuzzy RDD
