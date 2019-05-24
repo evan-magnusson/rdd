@@ -118,11 +118,11 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
     OUTPUT:
         Statsmodels object
 
-    To Do:
-        - return an error if yname AND equation are empty
-        - return an error if 'TREATED' is in the column (unless you're using your own equation)
-
     '''
+    if yname==None and equation==None:
+        raise NameError("You must supply either a outcome variable name or an equation to estimate.")
+    if 'TREATED' in input_data.columns:
+        raise NameError("TREATED is a reserved column name.  Please change the name.")
     data = input_data.copy() # To avoid SettingWithCopy warnings
     data['TREATED'] = np.where(data[xname] >= cut, 1, 0)
     if equation==None:
