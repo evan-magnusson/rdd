@@ -97,7 +97,7 @@ def truncated_data(data, xname, bandwidth=None, yname=None, cut=0):
     return data_new
 
 
-def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False, weights=1):
+def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False, weights=1, verbose=True):
     '''
     This function implements a linear regression (ordinary or weighted least squares can be used) for 
         the estimation of regressing the outcome variable on the running variable.  A "TREATED" variable
@@ -132,7 +132,8 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
             equation += ' + ' + equation_controls
     if noconst==True:
         equation += ' -1'
-    print('Estimation Equation:\t', equation)
+    if verbose==True:
+        print('Estimation Equation:\t', equation)
     rdd_model = smf.wls(equation, data=data, weights=weights)
     return rdd_model
 
