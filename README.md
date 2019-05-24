@@ -2,6 +2,10 @@
 
 rdd is a set of tools for implementing regression discontinuity designs in Python.  At present, it only allows for inputs that are pandas Series or DataFrames.  Check out the tutorial [here](https://github.com/evan-magnusson/rdd/blob/master/tutorial/tutorial.ipynb) for a guide to using this package.
 
+## Installation:
+
+To install using `pip`, run `pip install rdd`. See [here](https://pypi.org/project/rdd/) for more information and to download from PyPI.  Otherwise, you can download this repository.
+
 ## Current Features:
 
 * Computes the Imbens-Kalyanaraman optimal bandwidth (see [this article](http://www.nber.org/papers/w14726.pdf) for details)
