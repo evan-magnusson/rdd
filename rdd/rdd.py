@@ -21,9 +21,9 @@ def optimal_bandwidth(Y, X, cut=0):
         Scalar optimal bandwidth value
     '''
 
-    assert(X.shape[0] == Y.shape[0], "X and Y are not of the same length")
-    assert(np.sum(pd.isnull(X)) == 0, "NaNs are present in the running variable X")
-    assert(np.sum(pd.isnull(Y)) == 0, "NaNs are present in the running variable X")
+    assert X.shape[0] == Y.shape[0], "X and Y are not of the same length"
+    assert np.sum(pd.isnull(X)) == 0, "NaNs are present in the running variable X"
+    assert np.sum(pd.isnull(Y)) == 0, "NaNs are present in the running variable X"
 
 
     # Normalize X
@@ -154,7 +154,7 @@ def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
         yname: Name of outcome variable (string)
         xname: Name of running variable (string)
         bins: Desired number of bins to group data by (integer) (default is 50)
-
+        agg_fn: The function used to aggregate data into bins
     OUTPUT:
         A pandas DataFrame that has a row for each bin with columns:
             yname: The average value of the outcome variable in that bin
