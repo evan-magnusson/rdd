@@ -21,6 +21,11 @@ def optimal_bandwidth(Y, X, cut=0):
         Scalar optimal bandwidth value
     '''
 
+    assert(X.shape[0] == Y.shape[0], "X and Y are not of the same length")
+    assert(np.sum(pd.isnull(X)) == 0, "NaNs are present in the running variable X")
+    assert(np.sum(pd.isnull(Y)) == 0, "NaNs are present in the running variable X")
+
+
     # Normalize X
     X = X - cut
 
@@ -138,7 +143,7 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
     return rdd_model
 
 
-def bin_data(data, yname, xname, bins=50):
+def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
     '''
     When datasets are so large that traditional RDD scatter plots are difficult to read, 
         this will group observations by their X values into a set number of bins and compute
@@ -165,13 +170,13 @@ def bin_data(data, yname, xname, bins=50):
         if i < edges.shape[0]-2:
             dat_temp = data.loc[(data[xname] >= edges[i]) & (
                 data[xname] < edges[i+1]), :]
-            binned_df.loc[binned_df.index[i], yname] = dat_temp[yname].mean()
+            binned_df.loc[binned_df.index[i], yname] = agg_fn(dat_temp[yname])
             binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
             binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
         else:
             dat_temp = data.loc[(data[xname] >= edges[i]) & (
                 data[xname] <= edges[i+1]), :]
-            binned_df.loc[binned_df.index[i], yname] = dat_temp[yname].mean()
+            binned_df.loc[binned_df.index[i], yname] = agg_fn(dat_temp[yname])
             binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
             binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
     return binned_df
