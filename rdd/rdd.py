@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import statsmodels.formula.api as smf
-
+import matplotlib.pyplot as plt
 
 def optimal_bandwidth(Y, X, cut=0):
     '''
@@ -21,9 +21,9 @@ def optimal_bandwidth(Y, X, cut=0):
         Scalar optimal bandwidth value
     '''
 
-    assert(X.shape[0] == Y.shape[0], "X and Y are not of the same length")
-    assert(np.sum(pd.isnull(X)) == 0, "NaNs are present in the running variable X")
-    assert(np.sum(pd.isnull(Y)) == 0, "NaNs are present in the running variable X")
+    assert X.shape[0] == Y.shape[0], "X and Y are not of the same length"
+    assert np.sum(pd.isnull(X)) == 0, "NaNs are present in the running variable X"
+    assert np.sum(pd.isnull(Y)) == 0, "NaNs are present in the running variable X"
 
 
     # Normalize X
@@ -154,7 +154,7 @@ def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
         yname: Name of outcome variable (string)
         xname: Name of running variable (string)
         bins: Desired number of bins to group data by (integer) (default is 50)
-
+        agg_fn: The function used to aggregate data into bins
     OUTPUT:
         A pandas DataFrame that has a row for each bin with columns:
             yname: The average value of the outcome variable in that bin
@@ -180,3 +180,81 @@ def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
             binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
             binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
     return binned_df
+
+
+def visual_balance_check(input_data, xname, zname, cut=0):
+    '''
+    This function creates and displays a plot for visual inspection of balance for a control 
+    variable of interest by simply plotting the conditional mean of the control variable with 
+    respect to the running variable and the treatment condition.
+
+    INPUT:
+        input_data: dataset with outcome, running variables, and controls (pandas DataFrame)
+        xname: name of running variable (string)
+        zname: name of control variable (string)
+        cut: location of threshold in xname (scalar) (default is 0)
+
+    OUTPUT:
+        No object or value is returned. Only a plot is displayed
+    '''
+
+    data = input_data.copy() # To avoid SettingWithCopy warnings
+    #Treated group
+    trt = input_data[input_data['X'] >= cut]
+    #Control group
+    control = input_data[input_data['X'] < cut]
+
+    '''Get conditional mean for covariate of interested with respect to
+        value of running variable and treatment condition. 
+    '''
+    trt_conditional_mean = trt.groupby('X').mean()
+    control_conditional_mean = control.groupby('X').mean()
+
+    #Make plot for visual inspection
+    plt.plot(trt_conditional_mean.index, trt_conditional_mean['Z'])
+    plt.plot(control_conditional_mean.index, control_conditional_mean['Z'])
+    plt.axvline(x = cut, linestyle='--', color='red')
+    plt.xlabel(xname)
+    plt.ylabel(zname)
+    plt.title('Balance Check for %s'.format(zname))
+    plt.show()
+    
+    return
+
+def placebo_outcome_balance_check(input_data, xname, zname, cut=0):
+    '''
+    Implements a balance check for a control variable of interest by using the 
+    control as a placebo outcome. OLS regression is then conducted using the 
+    running variable and treatment condition as explanatory variables, and 
+    the control varaible as the outcome. The coefficient of the control variable
+    provides insight into balance for the contro varaible.
+
+    INPUT:
+        input_data: dataset with outcome, running variables, and controls (pandas DataFrame)
+        xname: name of running variable (string)
+        zname: name of control variable (string)
+        cut: location of threshold in xname (scalar) (default is 0)
+
+    OUTPUT:
+        control_var_coefficient: coefficient for the control variable in the OLS regression (float)
+        control_var_p_value: p-value for coefficient for the control variable (float)
+    '''
+    data = input_data.copy() # To avoid SettingWithCopy warnings
+
+    data['TREATED'] = input_data[xname].apply(lambda x: 1 if x >= cut else 0)
+    data['x_centered'] = data[xname] - cut
+
+    model = smf.ols(formula='Z ~ x_centered + TREATED + x_centered * TREATED', data = data)
+    res = model.fit()
+
+    #coefficient for the control variable in the OLS fit
+    control_var_coefficient = res.params.loc['TREATED']
+    #p-value for coefficient of the control variable in the OLS fit
+    control_var_p_value = res.pvalues.loc['TREATED']
+
+    return control_var_coefficient, control_var_p_value
+
+
+
+
+
