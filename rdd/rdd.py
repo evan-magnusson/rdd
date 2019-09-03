@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import statsmodels.formula.api as smf
-
+import matplotlib.pyplot as plt
 
 def optimal_bandwidth(Y, X, cut=0):
     '''
@@ -180,3 +180,46 @@ def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
             binned_df.loc[binned_df.index[i], xname] = bin_midpoint[i]
             binned_df.loc[binned_df.index[i], 'n_obs'] = dat_temp.shape[0]
     return binned_df
+
+
+def visual_balance_check(input_data, xname, zname, cut=0):
+    '''
+
+    This function creates and displays a plot for visual inspection og balance for a control 
+    variable of interest by simply plotting the conditional mean of the control variable with 
+    respect to the running variable and the treatment condition.
+
+    INPUT:
+        input_data: dataset with outcome, running variables, and controls (pandas DataFrame)
+        xname: name of running variable (string)
+        zname: name of control variable variable (string)
+        cut: location of threshold in xname (scalar) (default is 0)
+
+    OUTPUT:
+        No object or value is returned. Only a plot is displayed
+
+    '''
+
+    data = input_data.copy() # To avoid SettingWithCopy warnings
+    #Treated group
+    trt = input_data[input_data['X'] >= cut]
+    #Control group
+    control = input_data[input_data['X'] < cut]
+
+    '''Get conditional mean for covariate of interested with respect to
+        value of running variable and treatment condition. 
+    '''
+    trt_conditional_mean = trt.groupby('X').mean()
+    control_conditional_mean = control.groupby('X').mean()
+
+    #Make plot for visual inspection
+    plt.plot(trt_conditional_mean.index, trt_conditional_mean['Z'])
+    plt.plot(control_conditional_mean.index, control_conditional_mean['Z'])
+    plt.axvline(x = cut, linestyle='--', color='red')
+    plt.xlabel(xname)
+    plt.ylabel(zname)
+    plt.title('Balance Check for %s'.format(zname))
+    plt.show()
+    
+    return
+
