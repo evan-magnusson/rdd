@@ -184,20 +184,18 @@ def bin_data(data, yname, xname, bins=50, agg_fn=np.mean):
 
 def visual_balance_check(input_data, xname, zname, cut=0):
     '''
-
-    This function creates and displays a plot for visual inspection og balance for a control 
+    This function creates and displays a plot for visual inspection of balance for a control 
     variable of interest by simply plotting the conditional mean of the control variable with 
     respect to the running variable and the treatment condition.
 
     INPUT:
         input_data: dataset with outcome, running variables, and controls (pandas DataFrame)
         xname: name of running variable (string)
-        zname: name of control variable variable (string)
+        zname: name of control variable (string)
         cut: location of threshold in xname (scalar) (default is 0)
 
     OUTPUT:
         No object or value is returned. Only a plot is displayed
-
     '''
 
     data = input_data.copy() # To avoid SettingWithCopy warnings
@@ -222,4 +220,40 @@ def visual_balance_check(input_data, xname, zname, cut=0):
     plt.show()
     
     return
+
+def placebo_outcome_balance_check(input_data, xname, zname, cut=0):
+    '''
+    Implements a balance check for a control variable of interest by using the 
+    control as a placebo outcome. OLS regression is then conducted using the 
+    running variable and treatment condition as explanatory variables, and 
+    the control varaible as the outcome. The coefficient of the control variable
+    provides insight into balance for the contro varaible.
+
+    INPUT:
+        input_data: dataset with outcome, running variables, and controls (pandas DataFrame)
+        xname: name of running variable (string)
+        zname: name of control variable (string)
+        cut: location of threshold in xname (scalar) (default is 0)
+
+    OUTPUT:
+        control_var_coefficient: coefficient for the control variable in the OLS regression (float)
+        control_var_p_value: p-value for coefficient for the control variable (float)
+    '''
+    data = input_data.copy() # To avoid SettingWithCopy warnings
+
+    data['TREATED'] = input_data[xname].apply(lambda x: 1 if x >= cut else 0)
+
+    model = smf.ols(formula='Z ~ X + TREATED + X * TREATED', data = data)
+    res = model.fit()
+
+    #coefficient for the control variable in the OLS fit
+    control_var_coefficient = res.params.loc['TREATED']
+    #p-value for coefficient of the control variable in the OLS fit
+    control_var_p_value = res.pvalues.loc['TREATED']
+
+    return control_var_coefficient, control_var_p_value
+
+
+
+
 
