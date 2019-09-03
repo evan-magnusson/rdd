@@ -242,8 +242,9 @@ def placebo_outcome_balance_check(input_data, xname, zname, cut=0):
     data = input_data.copy() # To avoid SettingWithCopy warnings
 
     data['TREATED'] = input_data[xname].apply(lambda x: 1 if x >= cut else 0)
+    data['x_centered'] = data[xname] - cut
 
-    model = smf.ols(formula='Z ~ X + TREATED + X * TREATED', data = data)
+    model = smf.ols(formula='Z ~ x_centered + TREATED + x_centered * TREATED', data = data)
     res = model.fit()
 
     #coefficient for the control variable in the OLS fit
