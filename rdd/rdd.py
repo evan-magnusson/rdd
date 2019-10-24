@@ -102,7 +102,7 @@ def truncated_data(data, xname, bandwidth=None, yname=None, cut=0):
     return data_new
 
 
-def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noconst=False, weights=1, verbose=True):
+def rdd(input_data, xname, yname=None, cut=0, interact_treatment_running=False, equation=None, controls=None, noconst=False, weights=1, verbose=True):
     '''
     This function implements a linear regression (ordinary or weighted least squares can be used) for 
         the estimation of regressing the outcome variable on the running variable.  A "TREATED" variable
@@ -132,6 +132,9 @@ def rdd(input_data, xname, yname=None, cut=0, equation=None, controls=None, noco
     data['TREATED'] = np.where(data[xname] >= cut, 1, 0)
     if equation==None:
         equation = yname + ' ~ TREATED + ' + xname
+        if interact_treatment_running == True:
+            interact_term = ' + TREATED:' + xname
+            equation += add_term
         if controls != None:
             equation_controls = ' + '.join(controls)
             equation += ' + ' + equation_controls
